@@ -1,0 +1,7 @@
+*.suo
+*.user
+packages
+bin
+obj
+/.nuget/NuGet.Config
+/.nuget/NuGet.exe
