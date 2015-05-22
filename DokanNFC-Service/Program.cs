@@ -14,6 +14,8 @@ namespace DokanNFC
         /// </summary>
         static void Main()
         {
+            log4net.Config.XmlConfigurator.Configure();
+
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
             { 

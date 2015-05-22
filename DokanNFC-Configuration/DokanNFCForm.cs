@@ -18,11 +18,9 @@ namespace DokanNFC
             InitializeComponent();
 
             readerProviders = new Dictionary<string, IReaderProvider>();
-            readerUnits = new Dictionary<string, IReaderUnit>();
         }
 
         Dictionary<string, IReaderProvider> readerProviders;
-        Dictionary<string, IReaderUnit> readerUnits;
 
         private void DokanNFCForm_Load(object sender, EventArgs e)
         {
@@ -34,9 +32,7 @@ namespace DokanNFC
             readerProviders.Clear();
             cbReaderProvider.Items.Clear();
 
-            readerProviders.Add("PC/SC", new PCSCReaderProvider());
-            readerProviders.Add("STid STR", new STidSTRReaderProvider());
-            readerProviders.Add("Rpleth", new RplethReaderProvider());
+            readerProviders.Add(DokanNFCConfig.RP_PCSC, new PCSCReaderProvider());
 
             foreach (string rpname in readerProviders.Keys)
             {
@@ -46,7 +42,6 @@ namespace DokanNFC
 
         private void InitializeReaderUnitList()
         {
-            readerUnits.Clear();
             cbReaderUnit.Items.Clear();
 
             if (cbReaderProvider.SelectedIndex > -1)
@@ -54,12 +49,12 @@ namespace DokanNFC
                 string rpkey = cbReaderProvider.SelectedItem.ToString();
                 IReaderProvider readerProvider = readerProviders[rpkey];
                 object[] rulist = (object[])readerProvider.GetReaderList();
+                cbReaderUnit.Items.Add(String.Empty);
                 foreach (IReaderUnit ru in rulist)
                 {
                     string name = ru.name;
-                    if (!readerUnits.ContainsKey(name))
+                    if (!cbReaderUnit.Items.Contains(name))
                     {
-                        readerUnits.Add(name, ru);
                         cbReaderUnit.Items.Add(name);
                     }
                 }
