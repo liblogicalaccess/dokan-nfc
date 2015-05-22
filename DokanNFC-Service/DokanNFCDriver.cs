@@ -1,4 +1,4 @@
-﻿using Dokan;
+﻿using DokanNet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,109 +7,124 @@ using System.Threading.Tasks;
 
 namespace DokanNFC
 {
-    public class DokanNFCDriver : DokanOperations
+    public class DokanNFCDriver : IDokanOperations
     {
-        public int Cleanup(string filename, DokanFileInfo info)
+        public DokanError Cleanup(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int CloseFile(string filename, DokanFileInfo info)
+        public DokanError CloseFile(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int CreateDirectory(string filename, DokanFileInfo info)
+        public DokanError CreateDirectory(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int CreateFile(string filename, System.IO.FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, DokanFileInfo info)
+        public DokanError CreateFile(string fileName, FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, System.IO.FileAttributes attributes, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int DeleteDirectory(string filename, DokanFileInfo info)
+        public DokanError DeleteDirectory(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int DeleteFile(string filename, DokanFileInfo info)
+        public DokanError DeleteFile(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int FindFiles(string filename, System.Collections.ArrayList files, DokanFileInfo info)
+        public DokanError FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int FlushFileBuffers(string filename, DokanFileInfo info)
+        public DokanError FlushFileBuffers(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int GetDiskFreeSpace(ref ulong freeBytesAvailable, ref ulong totalBytes, ref ulong totalFreeBytes, DokanFileInfo info)
+        public DokanError GetDiskFreeSpace(out long free, out long total, out long used, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int GetFileInformation(string filename, FileInformation fileinfo, DokanFileInfo info)
+        public DokanError GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int LockFile(string filename, long offset, long length, DokanFileInfo info)
+        public DokanError GetFileSecurity(string fileName, out System.Security.AccessControl.FileSystemSecurity security, System.Security.AccessControl.AccessControlSections sections, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int MoveFile(string filename, string newname, bool replace, DokanFileInfo info)
+        public DokanError GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int OpenDirectory(string filename, DokanFileInfo info)
+        public DokanError LockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int ReadFile(string filename, byte[] buffer, ref uint readBytes, long offset, DokanFileInfo info)
+        public DokanError MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int SetAllocationSize(string filename, long length, DokanFileInfo info)
+        public DokanError OpenDirectory(string fileName, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int SetEndOfFile(string filename, long length, DokanFileInfo info)
+        public DokanError ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int SetFileAttributes(string filename, System.IO.FileAttributes attr, DokanFileInfo info)
+        public DokanError SetAllocationSize(string fileName, long length, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int SetFileTime(string filename, DateTime? ctime, DateTime? atime, DateTime? mtime, DokanFileInfo info)
+        public DokanError SetEndOfFile(string fileName, long length, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int UnlockFile(string filename, long offset, long length, DokanFileInfo info)
+        public DokanError SetFileAttributes(string fileName, System.IO.FileAttributes attributes, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int Unmount(DokanFileInfo info)
+        public DokanError SetFileSecurity(string fileName, System.Security.AccessControl.FileSystemSecurity security, System.Security.AccessControl.AccessControlSections sections, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }
 
-        public int WriteFile(string filename, byte[] buffer, ref uint writtenBytes, long offset, DokanFileInfo info)
+        public DokanError SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DokanError UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DokanError Unmount(DokanFileInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        public DokanError WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
         {
             throw new NotImplementedException();
         }

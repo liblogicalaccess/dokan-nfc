@@ -34,12 +34,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DokanNet">
-      <HintPath>..\packages\DokanNet.1.0.3.0\lib\net35\DokanNet.dll</HintPath>
+    <Reference Include="DokanNet, Version=0.7.0.0, Culture=neutral, processorArchitecture=x86">
+      <HintPath>..\packages\DokanNet.1.0.4.0\lib\net40\DokanNet.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Interop.LibLogicalAccess.Com">
       <HintPath>..\packages\liblogicalaccess.com.1.77.1.1213\lib\Interop.LibLogicalAccess.Com.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
