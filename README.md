@@ -10,9 +10,9 @@ RFID / NFC File System Driver for Windows.
  
 ### General
  - Download and install all prerequisites
- - Download and install the latest release from https://github.com/islog/dokan-nfc/releases/latest
+ - Download and install latest release from https://github.com/islog/dokan-nfc/releases/latest
  - Restart your computer or restart *DokanNFCSvc* Windows Service
- - A new drive should appear, you can use it browse and edit your RFID / NFC chip with regular files
+ - A new drive should appear, you can use it to browse and edit your RFID / NFC chip as regular files
  
 ## License
 GPL, see **LICENSE.GPL.txt** file.
