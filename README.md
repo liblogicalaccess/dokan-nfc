@@ -1,5 +1,6 @@
 # DokanNFC
 RFID / NFC File System Driver for Windows.
+[![Build status](https://ci.appveyor.com/api/projects/status/dftu4ojji0u8ck2b/branch/master?svg=true)](https://ci.appveyor.com/project/Maxhy/dokan-nfc/branch/master)
 
 ## Installation
 ### Dependencies
