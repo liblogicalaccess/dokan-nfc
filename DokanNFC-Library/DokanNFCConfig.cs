@@ -11,7 +11,7 @@ namespace DokanNFC
 {
     public enum DisplayMode : int
     {
-        Raw = 0,
+        RawRFID = 0,
         NFC = 1
     }
 
@@ -25,6 +25,8 @@ namespace DokanNFC
             Mode = DisplayMode.NFC;
             ReaderProvider = RP_PCSC;
             ReaderUnit = String.Empty;
+            AlwaysMounted = true;
+            CSNAsRoot = false;
         }
 
         public DisplayMode Mode { get; set; }
@@ -32,6 +34,12 @@ namespace DokanNFC
         public string ReaderProvider { get; set; }
 
         public string ReaderUnit { get; set; }
+
+        public bool AlwaysMounted { get; set; }
+
+        public bool CSNAsRoot { get; set; }
+
+        public string MountPoint { get; set; }
 
         public static string FileNamePath
         {
@@ -123,6 +131,28 @@ namespace DokanNFC
             }
 
             return readerUnit;
+        }
+
+        public static string[] GetAvailableMountPoints()
+        {
+            List<char> driveLetters = new List<char>(24);
+            // increment from ASCII values for C-Z
+            for (int i = 67; i < 91; i++)
+            {
+                driveLetters.Add(Convert.ToChar(i));
+            }
+            // removed used drive letters from possible drive letters
+            foreach (string drive in Directory.GetLogicalDrives())
+            {
+                driveLetters.Remove(drive[0]);
+            }
+
+            string[] mountPoints = new string[driveLetters.Count];
+            for (int i = 0; i < driveLetters.Count; ++i)
+            {
+                mountPoints[i] = driveLetters[i] + ":\\";
+            }
+            return mountPoints;
         }
     }
 }

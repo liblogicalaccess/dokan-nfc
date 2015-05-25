@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DokanNFC
@@ -16,12 +17,37 @@ namespace DokanNFC
         {
             log4net.Config.XmlConfigurator.Configure();
 
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[] 
-            { 
-                new DokanNFCSvc() 
-            };
-            ServiceBase.Run(ServicesToRun);
+            string[] args = Environment.GetCommandLineArgs();
+            bool startServiceMode = true;
+            foreach (string p in args)
+            {
+                switch (p.ToLower())
+                {
+                        case "/debug":
+                        startServiceMode = false;
+                        break;
+                }
+            }
+            if (startServiceMode)
+            {
+
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[] 
+                { 
+                    new DokanNFCSvc() 
+                };
+                ServiceBase.Run(ServicesToRun);
+            }
+            else
+            {
+                RFIDListener rfidListener = new RFIDListener();
+                rfidListener.Start();
+
+                while (true)
+                {
+                    Thread.Sleep(500);
+                }
+            }
         }
     }
 }

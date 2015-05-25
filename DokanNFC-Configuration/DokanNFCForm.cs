@@ -25,6 +25,14 @@ namespace DokanNFC
         private void DokanNFCForm_Load(object sender, EventArgs e)
         {
             InitializeReaderProviderList();
+            InitMountPoints();
+        }
+
+        private void InitMountPoints()
+        {
+            cbMountPoint.Items.Clear();
+            cbMountPoint.Items.Add(String.Empty);
+            cbMountPoint.Items.AddRange(DokanNFCConfig.GetAvailableMountPoints());
         }
 
         private void InitializeReaderProviderList()
@@ -80,10 +88,12 @@ namespace DokanNFC
 
         public void SetConfiguration(DokanNFCConfig config)
         {
-            rbtnModeRaw.Checked = (config.Mode == DisplayMode.Raw);
+            rbtnModeRaw.Checked = (config.Mode == DisplayMode.RawRFID);
             rbtnModeNFC.Checked = (config.Mode == DisplayMode.NFC);
             cbReaderProvider.SelectedItem = config.ReaderProvider;
             cbReaderUnit.SelectedItem = config.ReaderUnit;
+            chkKeepMounted.Checked = config.AlwaysMounted;
+            cbMountPoint.SelectedItem = config.MountPoint;
         }
 
         public DokanNFCConfig GetConfiguration()
@@ -91,11 +101,13 @@ namespace DokanNFC
             DokanNFCConfig config = new DokanNFCConfig();
 
             if (rbtnModeRaw.Checked)
-                config.Mode = DisplayMode.Raw;
+                config.Mode = DisplayMode.RawRFID;
             else if (rbtnModeNFC.Checked)
                 config.Mode = DisplayMode.NFC;
             config.ReaderProvider = (cbReaderProvider.SelectedIndex > -1) ? cbReaderProvider.SelectedItem.ToString() : String.Empty;
             config.ReaderProvider = (cbReaderUnit.SelectedIndex > -1) ? cbReaderUnit.SelectedItem.ToString() : String.Empty;
+            config.AlwaysMounted = chkKeepMounted.Checked;
+            config.MountPoint = (cbMountPoint.SelectedIndex > -1) ? cbMountPoint.SelectedItem.ToString() : String.Empty;
 
             return config;
         }

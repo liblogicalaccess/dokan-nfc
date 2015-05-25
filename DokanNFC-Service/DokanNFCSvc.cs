@@ -15,14 +15,19 @@ namespace DokanNFC
         public DokanNFCSvc()
         {
             InitializeComponent();
+            rfidListener = new RFIDListener();
         }
+
+        RFIDListener rfidListener;
 
         protected override void OnStart(string[] args)
         {
+            rfidListener.Start();
         }
 
         protected override void OnStop()
         {
+            rfidListener.Stop();
         }
     }
 }

@@ -34,13 +34,16 @@
             this.rbtnModeRaw = new System.Windows.Forms.RadioButton();
             this.lblMode = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
-            this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnOk = new System.Windows.Forms.Button();
             this.gpReader = new System.Windows.Forms.GroupBox();
-            this.lblReaderProvider = new System.Windows.Forms.Label();
-            this.cbReaderProvider = new System.Windows.Forms.ComboBox();
+            this.chkKeepMounted = new System.Windows.Forms.CheckBox();
             this.cbReaderUnit = new System.Windows.Forms.ComboBox();
             this.lblReaderUnit = new System.Windows.Forms.Label();
+            this.cbReaderProvider = new System.Windows.Forms.ComboBox();
+            this.lblReaderProvider = new System.Windows.Forms.Label();
+            this.lblMountPoint = new System.Windows.Forms.Label();
+            this.cbMountPoint = new System.Windows.Forms.ComboBox();
             this.gpMode.SuspendLayout();
             this.panelBottom.SuspendLayout();
             this.gpReader.SuspendLayout();
@@ -95,21 +98,10 @@
             this.panelBottom.Controls.Add(this.btnCancel);
             this.panelBottom.Controls.Add(this.btnOk);
             this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelBottom.Location = new System.Drawing.Point(0, 153);
+            this.panelBottom.Location = new System.Drawing.Point(0, 197);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(403, 32);
             this.panelBottom.TabIndex = 1;
-            // 
-            // btnOk
-            // 
-            this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnOk.Location = new System.Drawing.Point(123, 6);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 0;
-            this.btnOk.Text = "Ok";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
             // btnCancel
             // 
@@ -123,8 +115,22 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // btnOk
+            // 
+            this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btnOk.Location = new System.Drawing.Point(123, 6);
+            this.btnOk.Name = "btnOk";
+            this.btnOk.Size = new System.Drawing.Size(75, 23);
+            this.btnOk.TabIndex = 0;
+            this.btnOk.Text = "Ok";
+            this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            // 
             // gpReader
             // 
+            this.gpReader.Controls.Add(this.cbMountPoint);
+            this.gpReader.Controls.Add(this.lblMountPoint);
+            this.gpReader.Controls.Add(this.chkKeepMounted);
             this.gpReader.Controls.Add(this.cbReaderUnit);
             this.gpReader.Controls.Add(this.lblReaderUnit);
             this.gpReader.Controls.Add(this.cbReaderProvider);
@@ -132,29 +138,20 @@
             this.gpReader.Dock = System.Windows.Forms.DockStyle.Fill;
             this.gpReader.Location = new System.Drawing.Point(0, 82);
             this.gpReader.Name = "gpReader";
-            this.gpReader.Size = new System.Drawing.Size(403, 71);
+            this.gpReader.Size = new System.Drawing.Size(403, 115);
             this.gpReader.TabIndex = 2;
             this.gpReader.TabStop = false;
             this.gpReader.Text = "Reader";
             // 
-            // lblReaderProvider
+            // chkKeepMounted
             // 
-            this.lblReaderProvider.AutoSize = true;
-            this.lblReaderProvider.Location = new System.Drawing.Point(12, 18);
-            this.lblReaderProvider.Name = "lblReaderProvider";
-            this.lblReaderProvider.Size = new System.Drawing.Size(87, 13);
-            this.lblReaderProvider.TabIndex = 0;
-            this.lblReaderProvider.Text = "Reader Provider:";
-            // 
-            // cbReaderProvider
-            // 
-            this.cbReaderProvider.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbReaderProvider.FormattingEnabled = true;
-            this.cbReaderProvider.Location = new System.Drawing.Point(105, 15);
-            this.cbReaderProvider.Name = "cbReaderProvider";
-            this.cbReaderProvider.Size = new System.Drawing.Size(174, 21);
-            this.cbReaderProvider.TabIndex = 1;
-            this.cbReaderProvider.SelectedIndexChanged += new System.EventHandler(this.cbReaderProvider_SelectedIndexChanged);
+            this.chkKeepMounted.AutoSize = true;
+            this.chkKeepMounted.Location = new System.Drawing.Point(105, 96);
+            this.chkKeepMounted.Name = "chkKeepMounted";
+            this.chkKeepMounted.Size = new System.Drawing.Size(273, 17);
+            this.chkKeepMounted.TabIndex = 4;
+            this.chkKeepMounted.Text = "Keep the drive mounted even whithout card inserted";
+            this.chkKeepMounted.UseVisualStyleBackColor = true;
             // 
             // cbReaderUnit
             // 
@@ -174,13 +171,50 @@
             this.lblReaderUnit.TabIndex = 2;
             this.lblReaderUnit.Text = "Reader Unit:";
             // 
+            // cbReaderProvider
+            // 
+            this.cbReaderProvider.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbReaderProvider.FormattingEnabled = true;
+            this.cbReaderProvider.Location = new System.Drawing.Point(105, 15);
+            this.cbReaderProvider.Name = "cbReaderProvider";
+            this.cbReaderProvider.Size = new System.Drawing.Size(174, 21);
+            this.cbReaderProvider.TabIndex = 1;
+            this.cbReaderProvider.SelectedIndexChanged += new System.EventHandler(this.cbReaderProvider_SelectedIndexChanged);
+            // 
+            // lblReaderProvider
+            // 
+            this.lblReaderProvider.AutoSize = true;
+            this.lblReaderProvider.Location = new System.Drawing.Point(12, 18);
+            this.lblReaderProvider.Name = "lblReaderProvider";
+            this.lblReaderProvider.Size = new System.Drawing.Size(87, 13);
+            this.lblReaderProvider.TabIndex = 0;
+            this.lblReaderProvider.Text = "Reader Provider:";
+            // 
+            // lblMountPoint
+            // 
+            this.lblMountPoint.AutoSize = true;
+            this.lblMountPoint.Location = new System.Drawing.Point(33, 72);
+            this.lblMountPoint.Name = "lblMountPoint";
+            this.lblMountPoint.Size = new System.Drawing.Size(66, 13);
+            this.lblMountPoint.TabIndex = 5;
+            this.lblMountPoint.Text = "Mount point:";
+            // 
+            // cbMountPoint
+            // 
+            this.cbMountPoint.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbMountPoint.FormattingEnabled = true;
+            this.cbMountPoint.Location = new System.Drawing.Point(105, 69);
+            this.cbMountPoint.Name = "cbMountPoint";
+            this.cbMountPoint.Size = new System.Drawing.Size(44, 21);
+            this.cbMountPoint.TabIndex = 6;
+            // 
             // DokanNFCForm
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(403, 185);
+            this.ClientSize = new System.Drawing.Size(403, 229);
             this.Controls.Add(this.gpReader);
             this.Controls.Add(this.panelBottom);
             this.Controls.Add(this.gpMode);
@@ -212,6 +246,9 @@
         private System.Windows.Forms.Label lblReaderProvider;
         private System.Windows.Forms.ComboBox cbReaderUnit;
         private System.Windows.Forms.Label lblReaderUnit;
+        private System.Windows.Forms.CheckBox chkKeepMounted;
+        private System.Windows.Forms.ComboBox cbMountPoint;
+        private System.Windows.Forms.Label lblMountPoint;
     }
 }
 

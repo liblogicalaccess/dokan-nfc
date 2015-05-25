@@ -1,4 +1,5 @@
-﻿using LibLogicalAccess;
+﻿using DokanNet;
+using LibLogicalAccess;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,14 @@ namespace DokanNFC
 
         IReaderUnit readerUnit;
 
+        DokanRFIDDriver driver;
+
+        IChip insertedChip;
+
+        DateTime? chipInsertionDate;
+
+        AutoResetEvent waitRemoval;
+
         public bool IsRunning { get; protected set; }
 
         public void Start()
@@ -56,6 +65,9 @@ namespace DokanNFC
         protected void Listen()
         {
             IsRunning = true;
+            waitRemoval = new AutoResetEvent(false);
+            insertedChip = null;
+            chipInsertionDate = null;
 
             log.Info(String.Format("Listening on {0} reader {1}...", readerProviderName, readerUnitName));
 
@@ -66,30 +78,86 @@ namespace DokanNFC
             {
                 if (readerUnit.ConnectToReader())
                 {
-                    // TODO: mount Dokan drive here
-                    do
+                    DokanNFCConfig config = DokanNFCConfig.GetSingletonInstance();
+                    switch (config.Mode)
                     {
-                        if (readerUnit.WaitInsertion(500))
-                        {
-                            log.Info("Card inserted.");
-                            if (readerUnit.Connect())
-                            {
-                                IChip chip = readerUnit.GetSingleChip();
-                                // TODO: notify Dokan of card insertion
+                        case DisplayMode.RawRFID:
+                            break;
+                        case DisplayMode.NFC:
+                            driver = new NFCDokanRFIDDriver(this);
+                            break;
+                    }
 
-                                readerUnit.Disconnect();
-                                while (!readerUnit.WaitRemoval(500) && IsRunning) ;
-                                log.Info("Card removed.");
-                                // TODO: notify Dokan of card removal
+                    if (driver != null)
+                    {
+                        string mountPoint = config.MountPoint;
+                        if (String.IsNullOrEmpty(mountPoint))
+                        {
+                            string[] mountPoints = DokanNFCConfig.GetAvailableMountPoints();
+                            if (mountPoints.Length > 0)
+                            {
+                                mountPoint = mountPoints[0];
+                            }
+                        }
+
+                        if (!String.IsNullOrEmpty(mountPoint))
+                        {
+                            DokanOptions options = DokanOptions.FixedDrive;
+                            if (config.AlwaysMounted)
+                            {
+                                driver.Mount(mountPoint, options);
                             }
                             else
                             {
-                                log.Error("Cannot connect to the card.");
+                                options |= DokanOptions.RemovableDrive;
+                            }
+                            do
+                            {
+                                if (readerUnit.WaitInsertion(500))
+                                {
+                                    chipInsertionDate = DateTime.Now;
+                                    log.Info("Card inserted.");
+                                    if (readerUnit.Connect())
+                                    {
+                                        insertedChip = readerUnit.GetSingleChip();
+                                        if (insertedChip != null)
+                                        {
+                                            if (!config.AlwaysMounted)
+                                            {
+                                                driver.Mount(mountPoint, options);
+                                            }
+
+                                            while (!waitRemoval.WaitOne(500) && IsRunning) ;
+                                            log.Info("Card removed.");
+
+                                            if (!config.AlwaysMounted)
+                                            {
+                                                Dokan.Unmount(mountPoint[0]);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        log.Error("Cannot connect to the card.");
+                                    }
+                                    chipInsertionDate = null;
+                                }
+                            } while (IsRunning);
+
+                            if (config.AlwaysMounted)
+                            {
+                                Dokan.Unmount(mountPoint[0]);
                             }
                         }
-                    } while (IsRunning);
-
-                    // TODO: unmount Dokan drive here
+                        else
+                        {
+                            log.Error("No mount point.");
+                        }
+                    }
+                    else
+                    {
+                        log.Error("No matching file system driver to mount.");
+                    }
                     readerUnit.DisconnectFromReader();
                 }
                 else
@@ -104,6 +172,26 @@ namespace DokanNFC
             {
                 log.Error("Error in RFID reader resource allocation.");
             }
+        }
+
+        public void ResetCard()
+        {
+            waitRemoval.Set();
+            insertedChip = null;
+            if (driver != null)
+            {
+                driver.ResetCache();
+            }
+        }
+
+        public IChip GetChip()
+        {
+            return insertedChip;
+        }
+
+        public DateTime GetChipInsertionDate()
+        {
+            return (chipInsertionDate.HasValue) ? chipInsertionDate.Value : DateTime.Now;
         }
     }
 }
