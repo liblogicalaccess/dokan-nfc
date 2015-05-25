@@ -34,16 +34,16 @@
             this.rbtnModeRaw = new System.Windows.Forms.RadioButton();
             this.lblMode = new System.Windows.Forms.Label();
             this.panelBottom = new System.Windows.Forms.Panel();
-            this.btnCancel = new System.Windows.Forms.Button();
-            this.btnOk = new System.Windows.Forms.Button();
+            this.btnClose = new System.Windows.Forms.Button();
+            this.btnSave = new System.Windows.Forms.Button();
             this.gpReader = new System.Windows.Forms.GroupBox();
+            this.cbMountPoint = new System.Windows.Forms.ComboBox();
+            this.lblMountPoint = new System.Windows.Forms.Label();
             this.chkKeepMounted = new System.Windows.Forms.CheckBox();
             this.cbReaderUnit = new System.Windows.Forms.ComboBox();
             this.lblReaderUnit = new System.Windows.Forms.Label();
             this.cbReaderProvider = new System.Windows.Forms.ComboBox();
             this.lblReaderProvider = new System.Windows.Forms.Label();
-            this.lblMountPoint = new System.Windows.Forms.Label();
-            this.cbMountPoint = new System.Windows.Forms.ComboBox();
             this.gpMode.SuspendLayout();
             this.panelBottom.SuspendLayout();
             this.gpReader.SuspendLayout();
@@ -77,11 +77,12 @@
             // rbtnModeRaw
             // 
             this.rbtnModeRaw.AutoSize = true;
+            this.rbtnModeRaw.Enabled = false;
             this.rbtnModeRaw.Location = new System.Drawing.Point(35, 36);
             this.rbtnModeRaw.Name = "rbtnModeRaw";
-            this.rbtnModeRaw.Size = new System.Drawing.Size(224, 17);
+            this.rbtnModeRaw.Size = new System.Drawing.Size(310, 17);
             this.rbtnModeRaw.TabIndex = 1;
-            this.rbtnModeRaw.Text = "Raw: chip content is displayed as raw files";
+            this.rbtnModeRaw.Text = "Raw: chip content is displayed as raw files (not available yet)";
             this.rbtnModeRaw.UseVisualStyleBackColor = true;
             // 
             // lblMode
@@ -95,36 +96,36 @@
             // 
             // panelBottom
             // 
-            this.panelBottom.Controls.Add(this.btnCancel);
-            this.panelBottom.Controls.Add(this.btnOk);
+            this.panelBottom.Controls.Add(this.btnClose);
+            this.panelBottom.Controls.Add(this.btnSave);
             this.panelBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelBottom.Location = new System.Drawing.Point(0, 197);
             this.panelBottom.Name = "panelBottom";
             this.panelBottom.Size = new System.Drawing.Size(403, 32);
             this.panelBottom.TabIndex = 1;
             // 
-            // btnCancel
+            // btnClose
             // 
-            this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(204, 6);
-            this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 1;
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.UseVisualStyleBackColor = true;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnClose.Location = new System.Drawing.Point(325, 4);
+            this.btnClose.Name = "btnClose";
+            this.btnClose.Size = new System.Drawing.Size(75, 23);
+            this.btnClose.TabIndex = 1;
+            this.btnClose.Text = "Close";
+            this.btnClose.UseVisualStyleBackColor = true;
+            this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
             // 
-            // btnOk
+            // btnSave
             // 
-            this.btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.btnOk.Location = new System.Drawing.Point(123, 6);
-            this.btnOk.Name = "btnOk";
-            this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 0;
-            this.btnOk.Text = "Ok";
-            this.btnOk.UseVisualStyleBackColor = true;
-            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
+            this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnSave.Location = new System.Drawing.Point(3, 4);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.TabIndex = 0;
+            this.btnSave.Text = "Save";
+            this.btnSave.UseVisualStyleBackColor = true;
+            this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
             // gpReader
             // 
@@ -142,6 +143,24 @@
             this.gpReader.TabIndex = 2;
             this.gpReader.TabStop = false;
             this.gpReader.Text = "Reader";
+            // 
+            // cbMountPoint
+            // 
+            this.cbMountPoint.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbMountPoint.FormattingEnabled = true;
+            this.cbMountPoint.Location = new System.Drawing.Point(105, 69);
+            this.cbMountPoint.Name = "cbMountPoint";
+            this.cbMountPoint.Size = new System.Drawing.Size(44, 21);
+            this.cbMountPoint.TabIndex = 6;
+            // 
+            // lblMountPoint
+            // 
+            this.lblMountPoint.AutoSize = true;
+            this.lblMountPoint.Location = new System.Drawing.Point(33, 72);
+            this.lblMountPoint.Name = "lblMountPoint";
+            this.lblMountPoint.Size = new System.Drawing.Size(66, 13);
+            this.lblMountPoint.TabIndex = 5;
+            this.lblMountPoint.Text = "Mount point:";
             // 
             // chkKeepMounted
             // 
@@ -190,30 +209,12 @@
             this.lblReaderProvider.TabIndex = 0;
             this.lblReaderProvider.Text = "Reader Provider:";
             // 
-            // lblMountPoint
-            // 
-            this.lblMountPoint.AutoSize = true;
-            this.lblMountPoint.Location = new System.Drawing.Point(33, 72);
-            this.lblMountPoint.Name = "lblMountPoint";
-            this.lblMountPoint.Size = new System.Drawing.Size(66, 13);
-            this.lblMountPoint.TabIndex = 5;
-            this.lblMountPoint.Text = "Mount point:";
-            // 
-            // cbMountPoint
-            // 
-            this.cbMountPoint.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbMountPoint.FormattingEnabled = true;
-            this.cbMountPoint.Location = new System.Drawing.Point(105, 69);
-            this.cbMountPoint.Name = "cbMountPoint";
-            this.cbMountPoint.Size = new System.Drawing.Size(44, 21);
-            this.cbMountPoint.TabIndex = 6;
-            // 
             // DokanNFCForm
             // 
-            this.AcceptButton = this.btnOk;
+            this.AcceptButton = this.btnSave;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.btnCancel;
+            this.CancelButton = this.btnClose;
             this.ClientSize = new System.Drawing.Size(403, 229);
             this.Controls.Add(this.gpReader);
             this.Controls.Add(this.panelBottom);
@@ -239,8 +240,8 @@
         private System.Windows.Forms.RadioButton rbtnModeNFC;
         private System.Windows.Forms.RadioButton rbtnModeRaw;
         private System.Windows.Forms.Panel panelBottom;
-        private System.Windows.Forms.Button btnOk;
-        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.GroupBox gpReader;
         private System.Windows.Forms.ComboBox cbReaderProvider;
         private System.Windows.Forms.Label lblReaderProvider;

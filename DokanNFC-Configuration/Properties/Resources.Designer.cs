@@ -59,5 +59,32 @@ namespace DokanNFC.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Configuration saved successfully..
+        /// </summary>
+        internal static string ConfigSaved {
+            get {
+                return ResourceManager.GetString("ConfigSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Error.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Information.
+        /// </summary>
+        internal static string Information {
+            get {
+                return ResourceManager.GetString("Information", resourceCulture);
+            }
+        }
     }
 }

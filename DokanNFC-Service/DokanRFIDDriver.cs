@@ -130,14 +130,14 @@ namespace DokanNFC
 
         public DokanError Cleanup(string fileName, DokanFileInfo info)
         {
-            log.Info("Cleanup call.");
+            log.Info(String.Format("Cleanup call - {0}", fileName));
 
             return DokanError.ErrorSuccess;
         }
 
         public DokanError CloseFile(string fileName, DokanFileInfo info)
         {
-            log.Info("CloseFile call.");
+            log.Info(String.Format("CloseFile call - {0}", fileName));
             
             return DokanError.ErrorSuccess;
         }
@@ -154,6 +154,8 @@ namespace DokanNFC
 
         public DokanError FlushFileBuffers(string fileName, DokanFileInfo info)
         {
+            log.Info(String.Format("FlushFileBuffers call - {0}", fileName));
+
             return DokanError.ErrorSuccess;
         }
 
@@ -196,7 +198,7 @@ namespace DokanNFC
                     {
                         try
                         {
-                            free = cmd.GetFreeMemory();
+                            free = cmd.GetFreeMemory() / 1024;
                             DESFireCardVersion version = cmd.GetVersion();
                             total = ((long)(version.softwareStorageSize / 4)) * 1024;
                             used = total - free;
@@ -218,7 +220,7 @@ namespace DokanNFC
 
         public DokanError GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
         {
-            log.Info("GetFileInformation call");
+            log.Info(String.Format("GetFileInformation call - {0}", fileName));
 
             fileInfo = new FileInformation();
             try
@@ -246,7 +248,7 @@ namespace DokanNFC
 
         public DokanError GetFileSecurity(string fileName, out System.Security.AccessControl.FileSystemSecurity security, System.Security.AccessControl.AccessControlSections sections, DokanFileInfo info)
         {
-            log.Info("GetFileSecurity call");
+            log.Info(String.Format("GetFileSecurity call - {0}", fileName));
 
             security = null;
             return DokanError.ErrorError;
@@ -265,7 +267,7 @@ namespace DokanNFC
 
         public DokanError LockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            log.Info("LockFile call");
+            log.Info(String.Format("LockFile call - {0}", fileName));
 
             return DokanError.ErrorSuccess;
         }
@@ -278,42 +280,42 @@ namespace DokanNFC
 
         public DokanError SetAllocationSize(string fileName, long length, DokanFileInfo info)
         {
-            log.Info("SetAllocationSize call");
+            log.Info(String.Format("SetAllocationSize call - {0}", fileName));
 
             return DokanError.ErrorSuccess;
         }
 
         public DokanError SetEndOfFile(string fileName, long length, DokanFileInfo info)
         {
-            log.Info("SetEndOfFile call");
+            log.Info(String.Format("SetEndOfFile call - {0}", fileName));
 
             return DokanError.ErrorSuccess;
         }
 
         public DokanError SetFileAttributes(string fileName, System.IO.FileAttributes attributes, DokanFileInfo info)
         {
-            log.Info("SetFileAttributes call");
+            log.Info(String.Format("SetFileAttributes call - {0}", fileName));
 
             return DokanError.ErrorError;
         }
 
         public DokanError SetFileSecurity(string fileName, System.Security.AccessControl.FileSystemSecurity security, System.Security.AccessControl.AccessControlSections sections, DokanFileInfo info)
         {
-            log.Info("SetFileSecurity call");
+            log.Info(String.Format("SetFileSecurity call - {0}", fileName));
 
             return DokanError.ErrorError;
         }
 
         public DokanError SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
         {
-            log.Info("SetFileTime call");
+            log.Info(String.Format("SetFileTime call - {0}", fileName));
 
             return DokanError.ErrorError;
         }
 
         public DokanError UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
         {
-            log.Info("UnlockFile call");
+            log.Info(String.Format("UnlockFile call - {0}", fileName));
 
             return DokanError.ErrorSuccess;
         }

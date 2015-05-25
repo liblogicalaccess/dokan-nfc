@@ -4,6 +4,7 @@ using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,8 @@ namespace DokanNFC
         DateTime? chipInsertionDate;
 
         AutoResetEvent waitRemoval;
+
+        Thread dokanThrd;
 
         public bool IsRunning { get; protected set; }
 
@@ -105,7 +108,7 @@ namespace DokanNFC
                             DokanOptions options = DokanOptions.FixedDrive;
                             if (config.AlwaysMounted)
                             {
-                                driver.Mount(mountPoint, options);
+                                Mount(mountPoint, options);
                             }
                             else
                             {
@@ -115,6 +118,7 @@ namespace DokanNFC
                             {
                                 if (readerUnit.WaitInsertion(500))
                                 {
+                                    Thread.Sleep(400);
                                     chipInsertionDate = DateTime.Now;
                                     log.Info("Card inserted.");
                                     if (readerUnit.Connect())
@@ -122,9 +126,10 @@ namespace DokanNFC
                                         insertedChip = readerUnit.GetSingleChip();
                                         if (insertedChip != null)
                                         {
+                                            log.Info(String.Format("Chip type `{0}`", insertedChip.Type));
                                             if (!config.AlwaysMounted)
                                             {
-                                                driver.Mount(mountPoint, options);
+                                                Mount(mountPoint, options);
                                             }
 
                                             while (!waitRemoval.WaitOne(500) && IsRunning) ;
@@ -132,7 +137,7 @@ namespace DokanNFC
 
                                             if (!config.AlwaysMounted)
                                             {
-                                                Dokan.Unmount(mountPoint[0]);
+                                                Unmount(mountPoint);
                                             }
                                         }
                                     }
@@ -146,7 +151,7 @@ namespace DokanNFC
 
                             if (config.AlwaysMounted)
                             {
-                                Dokan.Unmount(mountPoint[0]);
+                                Unmount(mountPoint);
                             }
                         }
                         else
@@ -174,6 +179,40 @@ namespace DokanNFC
             }
         }
 
+        private void Mount(string mountPoint, DokanOptions options)
+        {
+            dokanThrd = new Thread(delegate()
+            {
+                log.Info("Dokan thread started");
+                driver.Mount(mountPoint, options);
+            });
+            dokanThrd.Start();
+        }
+
+        private void Unmount(string mountPoint)
+        {
+            log.Info(String.Format("Unmount {0}", mountPoint));
+
+            try
+            {
+                Dokan.RemoveMountPoint(mountPoint);
+                driver.Unmount(null);
+                driver = null;
+            }
+            catch (DokanException ex)
+            {
+                log.Error("Unmount failed", ex);
+            }
+
+            if (dokanThrd != null && dokanThrd.IsAlive)
+            {
+                log.Info("Dokan thread join");
+                dokanThrd.Join();
+            }
+            dokanThrd = null;
+            log.Info("Dokan thread ended");
+        }
+
         public void ResetCard()
         {
             waitRemoval.Set();
@@ -187,6 +226,34 @@ namespace DokanNFC
         public IChip GetChip()
         {
             return insertedChip;
+        }
+
+        public bool ReconnectOnCard()
+        {
+            if (insertedChip == null)
+                return false;
+
+            bool ret = false;
+            try
+            {
+                readerUnit.Disconnect();
+                ret = readerUnit.Connect();
+                if (ret)
+                {
+                    insertedChip = readerUnit.GetSingleChip();
+                }
+            }
+            catch (COMException)
+            {
+                ret = false;
+            }
+
+            if (!ret)
+            {
+                ResetCard();
+            }
+
+            return ret;
         }
 
         public DateTime GetChipInsertionDate()

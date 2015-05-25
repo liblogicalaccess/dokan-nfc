@@ -22,110 +22,119 @@ namespace DokanNFC
 
         public override DokanError CreateDirectory(string fileName, DokanFileInfo info)
         {
-            log.Info("CreateDirectory call");
+            log.Info(String.Format("CreateDirectory call - {0}", fileName));
 
             return DokanError.ErrorError;
         }
 
         public override DokanError CreateFile(string fileName, FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo info)
         {
-            log.Info("CreateFile call");
+            log.Info(String.Format("CreateFile call - {0}", fileName));
 
-            bool exists = false;
-            lock (cacheFiles)
+            IChip chip = rfidListener.GetChip();
+            if (chip == null)
+                return DokanError.ErrorNotReady;
+
+            if (fileName == "\\" || fileName == ("\\" + chip.ChipIdentifier))
             {
-                if (!CacheExists(fileName))
+                return DokanError.ErrorSuccess;
+            }
+            else if ((attributes & FileAttributes.Directory) != 0)
+            {
+                return DokanError.ErrorFileNotFound;
+            }
+            else
+            {
+                bool exists = false;
+                lock (cacheFiles)
                 {
-                    if (CacheCount() > 0)
-                        return DokanError.ErrorError;
+                    if (!CacheExists(fileName))
+                    {
+                        if (CacheCount() > 0)
+                            return DokanError.ErrorError;
 
-                    byte[] payload = null;
-                    string extension = Path.GetExtension(fileName);
-                    DokanError payloadRet = ReadPayload(out payload, out extension);
-                    if (payloadRet == DokanError.ErrorSuccess)
-                    {
-                        InitCache(fileName);
-                        WriteToCache(fileName, payload);
-                        exists = true;
-                    }
-                    else if (payloadRet != DokanError.ErrorFileNotFound)
-                    {
+                        DokanError payloadRet = ReadAndCachePayload(nfcConfig.CSNAsRoot ? "\\" + chip.ChipIdentifier : String.Empty);
+                        if (payloadRet == DokanError.ErrorSuccess)
+                        {
+                            exists = CacheExists(fileName);
+                        }
+                        
                         return payloadRet;
                     }
+                    else
+                    {
+                        exists = true;
+                    }
                 }
-                else
+
+                switch (mode)
                 {
-                    exists = true;
-                }
-            }
-            
-            switch (mode)
-            {
-                case FileMode.Open:
-                    {
-                        log.Info("FileMode Open");
-                        if (exists)
-                            return DokanError.ErrorSuccess;
-                        else
-                            return DokanError.ErrorFileNotFound;
-                    }
-
-                case FileMode.CreateNew:
-                    {
-                        log.Info("FileMode CreateNew");
-                        if (exists)
-                            return DokanError.ErrorAlreadyExists;
-
-                        InitCache(fileName);
-                        return DokanError.ErrorSuccess;
-                    }
-
-                case FileMode.Create:
-                    {
-                        log.Info("FileMode Create");
-                        InitCache(fileName);
-                        return DokanError.ErrorSuccess;
-                    }
-
-                case FileMode.OpenOrCreate:
-                    {
-                        log.Info("FileMode OpenOrCreate");
-                        if (!exists)
+                    case FileMode.Open:
                         {
-                            InitCache(fileName);
+                            log.Info("FileMode Open");
+                            if (exists)
+                                return DokanError.ErrorSuccess;
+                            else
+                                return DokanError.ErrorFileNotFound;
                         }
-                        return DokanError.ErrorSuccess;
-                    }
 
-                case FileMode.Truncate:
-                    {
-                        log.Info("FileMode Truncate");
-                        if (!exists)
-                            return DokanError.ErrorFileNotFound;
+                    case FileMode.CreateNew:
+                        {
+                            log.Info("FileMode CreateNew");
+                            if (exists)
+                                return DokanError.ErrorAlreadyExists;
 
-                        InitCache(fileName);
-                        return DokanError.ErrorSuccess;
-                    }
+                            InitCache(fileName);
+                            return DokanError.ErrorSuccess;
+                        }
 
-                case FileMode.Append:
-                    {
-                        log.Info("FileMode Append");
-                        if (!exists)
-                            return DokanError.ErrorFileNotFound;
+                    case FileMode.Create:
+                        {
+                            log.Info("FileMode Create");
+                            InitCache(fileName);
+                            return DokanError.ErrorSuccess;
+                        }
 
-                        return DokanError.ErrorSuccess;
-                    }
-                default:
-                    {
-                        log.Error(String.Format("Error unknown FileMode {0}", mode));
-                        return DokanError.ErrorError;
-                    }
+                    case FileMode.OpenOrCreate:
+                        {
+                            log.Info("FileMode OpenOrCreate");
+                            if (!exists)
+                            {
+                                InitCache(fileName);
+                            }
+                            return DokanError.ErrorSuccess;
+                        }
+
+                    case FileMode.Truncate:
+                        {
+                            log.Info("FileMode Truncate");
+                            if (!exists)
+                                return DokanError.ErrorFileNotFound;
+
+                            InitCache(fileName);
+                            return DokanError.ErrorSuccess;
+                        }
+
+                    case FileMode.Append:
+                        {
+                            log.Info("FileMode Append");
+                            if (!exists)
+                                return DokanError.ErrorFileNotFound;
+
+                            return DokanError.ErrorSuccess;
+                        }
+                    default:
+                        {
+                            log.Error(String.Format("Error unknown FileMode {0}", mode));
+                            return DokanError.ErrorError;
+                        }
+                }
             }
         }
 
         public override DokanError DeleteDirectory(string fileName, DokanFileInfo info)
         {
-            log.Info("DeleteDirectory call");
+            log.Info(String.Format("DeleteDirectory call - {0}", fileName));
             
             // Deleting root directory = card format
             if (fileName.IndexOf('\\') == -1)
@@ -138,6 +147,8 @@ namespace DokanNFC
 
         public override DokanError DeleteFile(string fileName, DokanFileInfo info)
         {
+            log.Info(String.Format("DeleteFile call - {0}", fileName));
+
             if (!CacheExists(fileName))
                 return DokanError.ErrorFileNotFound;
 
@@ -147,13 +158,15 @@ namespace DokanNFC
 
         public override DokanError FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
         {
+            log.Info(String.Format("FindFiles call - {0}", fileName));
+
             files = new List<FileInformation>();
 
             IChip chip = rfidListener.GetChip();
             if (chip == null)
                 return DokanError.ErrorNotReady;
 
-            if (String.IsNullOrEmpty(fileName))
+            if (fileName == "\\")
             {
                 if (nfcConfig.CSNAsRoot)
                     return PopulateCSNFiles(files);
@@ -189,25 +202,11 @@ namespace DokanNFC
 
         protected DokanError PopulateNDEFFiles(IList<FileInformation> files, string parentName = null)
         {
-            byte[] payload = null;
-            string extension = String.Empty;
-
             if (CacheCount() == 0)
             {
-                DokanError payloadRet = ReadPayload(out payload, out extension);
+                DokanError payloadRet = ReadAndCachePayload(parentName);
                 if (payloadRet != DokanError.ErrorSuccess)
                     return payloadRet;
-
-                string filename = "record";
-                if (!String.IsNullOrEmpty(extension))
-                    filename += "." + extension;
-
-                if (!String.IsNullOrEmpty(parentName))
-                {
-                    filename = parentName + "\\" + filename;
-                }
-                InitCache(filename);
-                WriteToCache(filename, payload);
             }
 
             foreach (string filename in cacheFiles.Keys)
@@ -223,25 +222,56 @@ namespace DokanNFC
             return DokanError.ErrorSuccess;
         }
 
+        protected DokanError ReadAndCachePayload(string parentName)
+        {
+            byte[] payload = null;
+            string extension = String.Empty;
+            DokanError payloadRet = ReadPayload(out payload, out extension);
+            if (payloadRet != DokanError.ErrorSuccess)
+            {
+                log.Error("Error reading payload");
+                return payloadRet;
+            }
+
+            string filename = "\\record";
+            if (!String.IsNullOrEmpty(extension))
+                filename += "." + extension;
+
+            if (!String.IsNullOrEmpty(parentName))
+            {
+                filename = parentName + filename;
+            }
+            InitCache(filename);
+            WriteToCache(filename, payload);
+            log.Info(String.Format("Record cached as {0}", filename));
+            return DokanError.ErrorSuccess;
+        }
+
         protected DokanError ReadPayload(out byte[] payload, out string extension)
         {
             payload = null;
             extension = String.Empty;
 
-            IChip chip = rfidListener.GetChip();
-            if (chip == null)
+            // Make sure the chip is still here
+            if (!rfidListener.ReconnectOnCard())
+            {
+                log.Error("Card reconnection failed");
                 return DokanError.ErrorNotReady;
+            }
 
-            IISO7816NFCTag4CardService nfcsvc = chip.GetService(CardServiceType.CST_NFC_TAG) as IISO7816NFCTag4CardService;
+            IChip chip = rfidListener.GetChip();
+            ICardService svc = chip.GetService(CardServiceType.CST_NFC_TAG);
+            IDESFireEV1NFCTag4CardService nfcsvc = svc as IDESFireEV1NFCTag4CardService;
             if (nfcsvc == null)
             {
+                log.Error("No NFC service.");
                 // If no NFC service for this chip, we must fail
                 return DokanError.ErrorNotReady;
             }
 
             try
             {
-                NdefMessage ndef = nfcsvc.ReadNDEFFile(); ;
+                NdefMessage ndef = nfcsvc.ReadNDEFFile();
                 if (ndef != null)
                 {
                     if (ndef.GetRecordCount() > 0)
@@ -256,11 +286,22 @@ namespace DokanNFC
                             extension = GetPayloadExtension(record);
                         }
                     }
+                    else
+                    {
+                        log.Info("No NDEF record in the message");
+                    }
+                }
+                else
+                {
+                    log.Info("No NDEF message on ths card");
                 }
             }
-            catch (COMException) { }
+            catch (COMException ex)
+            {
+                log.Info("NDEF read error", ex);
+            }
 
-            return DokanError.ErrorFileNotFound;
+            return DokanError.ErrorSuccess;
         }
 
         public override long GetFileSize(string fileName)
@@ -316,21 +357,24 @@ namespace DokanNFC
 
         public override DokanError MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
         {
-            log.Info("MoveFile call");
+            log.Info(String.Format("MoveFile call - {0} to {1}", oldName, newName));
 
             return DokanError.ErrorError;
         }
 
         public override DokanError OpenDirectory(string fileName, DokanFileInfo info)
         {
-            log.Info("OpenDirectory call");
+            log.Info(String.Format("OpenDirectory call - {0}", fileName));
+
+            IChip chip = rfidListener.GetChip();
+            if (chip == null)
+                return DokanError.ErrorNotReady;
+
+            if (fileName == "\\")
+                return DokanError.ErrorSuccess;
 
             if (nfcConfig.CSNAsRoot)
             {
-                IChip chip = rfidListener.GetChip();
-                if (chip == null)
-                    return DokanError.ErrorNotReady;
-
                 if (fileName == chip.ChipIdentifier)
                     return DokanError.ErrorSuccess;
             }
@@ -340,6 +384,7 @@ namespace DokanNFC
 
         public override DokanError ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
         {
+            log.Info(String.Format("ReadFile call - {0}, Offset: {1}, Length: {2}", fileName, buffer.Length, offset));
             bytesRead = 0;
 
             if (info.IsDirectory)
@@ -357,6 +402,7 @@ namespace DokanNFC
 
         public override DokanError WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
         {
+            log.Info(String.Format("WriteFile call - {0}, Offset: {1}, Length: {2}", fileName, buffer.Length, offset));
             bytesWritten = 0;
 
             if (info.IsDirectory)

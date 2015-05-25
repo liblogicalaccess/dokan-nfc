@@ -19,16 +19,17 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,10 +37,10 @@
   <ItemGroup>
     <Reference Include="DokanNet, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\DokanNet.1.0.6.0\lib\net40\DokanNet.dll</HintPath>
+      <HintPath>..\packages\DokanNet.1.0.7.0\lib\net40\DokanNet.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.LibLogicalAccess.Com">
-      <HintPath>..\packages\liblogicalaccess.com.1.77.1.1213\lib\Interop.LibLogicalAccess.Com.dll</HintPath>
+    <Reference Include="Interop.LibLogicalAccess.Com, Version=1.78.0.0, Culture=neutral, PublicKeyToken=7a82f2d3e51d7690, processorArchitecture=MSIL">
+      <HintPath>..\packages\liblogicalaccess.com.1.78.0-pre0409411\lib\Interop.LibLogicalAccess.Com.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <Private>True</Private>
     </Reference>

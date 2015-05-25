@@ -91,6 +91,9 @@ namespace DokanNFC
 
         public void SaveToFile()
         {
+            if (!Directory.Exists(FileNamePath))
+                Directory.CreateDirectory(FileNamePath);
+
             XmlSerializer xs = new XmlSerializer(typeof(DokanNFCConfig));
             using (StreamWriter wr = new StreamWriter(FileName))
             {

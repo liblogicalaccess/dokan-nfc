@@ -26,6 +26,7 @@ namespace DokanNFC
         {
             InitializeReaderProviderList();
             InitMountPoints();
+            SetConfiguration(DokanNFCConfig.GetSingletonInstance());
         }
 
         private void InitMountPoints()
@@ -74,13 +75,21 @@ namespace DokanNFC
             InitializeReaderUnitList();
         }
 
-        private void btnOk_Click(object sender, EventArgs e)
+        private void btnSave_Click(object sender, EventArgs e)
         {
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.Close();
+            try
+            {
+                DokanNFCConfig config = GetConfiguration();
+                config.SaveToFile();
+                MessageBox.Show(Properties.Resources.ConfigSaved, Properties.Resources.Information, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Properties.Resources.Error, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        private void btnClose_Click(object sender, EventArgs e)
         {
             this.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Close();
@@ -105,7 +114,7 @@ namespace DokanNFC
             else if (rbtnModeNFC.Checked)
                 config.Mode = DisplayMode.NFC;
             config.ReaderProvider = (cbReaderProvider.SelectedIndex > -1) ? cbReaderProvider.SelectedItem.ToString() : String.Empty;
-            config.ReaderProvider = (cbReaderUnit.SelectedIndex > -1) ? cbReaderUnit.SelectedItem.ToString() : String.Empty;
+            config.ReaderUnit = (cbReaderUnit.SelectedIndex > -1) ? cbReaderUnit.SelectedItem.ToString() : String.Empty;
             config.AlwaysMounted = chkKeepMounted.Checked;
             config.MountPoint = (cbMountPoint.SelectedIndex > -1) ? cbMountPoint.SelectedItem.ToString() : String.Empty;
 
