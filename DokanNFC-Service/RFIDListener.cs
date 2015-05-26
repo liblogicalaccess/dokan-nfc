@@ -225,6 +225,8 @@ namespace DokanNFC
 
         public IChip GetChip()
         {
+            if (insertedChip == null)
+                log.Warn("inserted chip is null");
             return insertedChip;
         }
 

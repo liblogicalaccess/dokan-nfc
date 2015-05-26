@@ -51,7 +51,10 @@ namespace DokanNFC
                     if (!CacheExists(fileName))
                     {
                         if (CacheCount() > 0)
-                            return DokanError.ErrorError;
+                        {
+                            log.Error("Cache already initiliazed and cannot found file");
+                            return DokanError.ErrorFileNotFound;
+                        }
 
                         DokanError payloadRet = ReadAndCachePayload(nfcConfig.CSNAsRoot ? "\\" + chip.ChipIdentifier : String.Empty);
                         if (payloadRet == DokanError.ErrorSuccess)
@@ -66,6 +69,8 @@ namespace DokanNFC
                         exists = true;
                     }
                 }
+
+                log.Info(String.Format("Exists? {0}", exists));
 
                 switch (mode)
                 {
@@ -175,6 +180,8 @@ namespace DokanNFC
             }
             else
             {
+                log.Info("Subdir");
+
                 if (!nfcConfig.CSNAsRoot)
                     return DokanError.ErrorPathNotFound;
 
@@ -187,6 +194,8 @@ namespace DokanNFC
 
         protected DokanError PopulateCSNFiles(IList<FileInformation> files)
         {
+            log.Info("PopulateCSNFiles call");
+
             IChip chip = rfidListener.GetChip();
             if (chip == null)
                 return DokanError.ErrorNotReady;
@@ -202,8 +211,11 @@ namespace DokanNFC
 
         protected DokanError PopulateNDEFFiles(IList<FileInformation> files, string parentName = null)
         {
+            log.Info("PopulateNDEFFiles call");
+
             if (CacheCount() == 0)
             {
+                log.Info("No cache yet, building cache list...");
                 DokanError payloadRet = ReadAndCachePayload(parentName);
                 if (payloadRet != DokanError.ErrorSuccess)
                     return payloadRet;
@@ -211,6 +223,7 @@ namespace DokanNFC
 
             foreach (string filename in cacheFiles.Keys)
             {
+                log.Info(String.Format("Found file {0}", filename));
                 FileInformation ndefFile = new FileInformation();
                 ndefFile.Attributes = FileAttributes.Normal;
                 ndefFile.FileName = Path.GetFileName(filename);
@@ -281,9 +294,18 @@ namespace DokanNFC
                         if (records != null)
                         {
                             INdefRecord record = records[0] as INdefRecord;
-                            object[] payloadobj = record.Payload as object[];
-                            payload = Array.ConvertAll(payloadobj, obj => (byte)obj);
-                            extension = GetPayloadExtension(record);
+                            object payloadobj = record.Payload;
+                            if (payloadobj != null)
+                            {
+                                log.Info("Waza4");
+                                payload = payloadobj as byte[];
+                                log.Info("Waza5");
+                                extension = GetPayloadExtension(record);
+                            }
+                            else
+                            {
+                                log.Error("Bad record payload");
+                            }
                         }
                     }
                     else
@@ -301,6 +323,7 @@ namespace DokanNFC
                 log.Info("NDEF read error", ex);
             }
 
+            log.Info("WazaX");
             return DokanError.ErrorSuccess;
         }
 
@@ -379,22 +402,30 @@ namespace DokanNFC
                     return DokanError.ErrorSuccess;
             }
 
+            log.Error("Path not found");
             return DokanError.ErrorPathNotFound;
         }
 
         public override DokanError ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
         {
-            log.Info(String.Format("ReadFile call - {0}, Offset: {1}, Length: {2}", fileName, buffer.Length, offset));
+            log.Info(String.Format("ReadFile call - {0}, Offset: {1}, Length: {2}", fileName, offset, buffer.Length));
             bytesRead = 0;
 
             if (info.IsDirectory)
+            {
+                log.Info("Is directory, skipped");
                 return DokanError.ErrorError;
+            }
 
             // For NFC we only support one NDEF record for now, no need to check fileName then
             byte[] data = ReadFromCache(fileName, buffer.Length, (int)offset);
             if (data == null)
-                return DokanError.ErrorFileNotFound;
+            {
+                log.Error("No data");
+                return DokanError.ErrorError;
+            }
 
+            log.Info(String.Format("{0} bytes read", data.Length));
             Array.Copy(data, buffer, data.Length);
             bytesRead = data.Length;
             return DokanError.ErrorSuccess;
@@ -402,14 +433,20 @@ namespace DokanNFC
 
         public override DokanError WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
         {
-            log.Info(String.Format("WriteFile call - {0}, Offset: {1}, Length: {2}", fileName, buffer.Length, offset));
+            log.Info(String.Format("WriteFile call - {0}, Offset: {1}, Length: {2}", fileName, offset, buffer.Length));
             bytesWritten = 0;
 
             if (info.IsDirectory)
+            {
+                log.Info("Is directory, skipped");
                 return DokanError.ErrorError;
+            }
 
             if (!CacheExists(fileName))
-                return DokanError.ErrorFileNotFound;
+            {
+                log.Error("No existing cache");
+                return DokanError.ErrorError;
+            }
 
             WriteToCache(fileName, buffer, (int)offset);
             bytesWritten = buffer.Length;

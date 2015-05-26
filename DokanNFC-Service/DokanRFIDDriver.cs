@@ -76,18 +76,28 @@ namespace DokanNFC
             Array.Copy(data, 0, cacheFiles[filename].Data, offset, data.Length);
         }
 
-        protected byte[] ReadFromCache(string filename, int length = 0, int offset = 0)
+        protected byte[] ReadFromCache(string filename, int length = -1, int offset = 0)
         {
             filename = filename.ToLower();
             if (!cacheFiles.ContainsKey(filename))
                 return null;
 
-            if (length == 0)
+            if (length == -1)
                 length = cacheFiles[filename].Data.Length;
 
-            byte[] chunk = new byte[length];
-            Array.Copy(cacheFiles[filename].Data, offset, chunk, 0, length);
-            cacheFiles[filename].LastAccessDate = DateTime.Now;
+            byte[] chunk = null;
+            if (length > -1)
+            {
+                if (length > cacheFiles[filename].Data.Length - offset)
+                    length = cacheFiles[filename].Data.Length - offset;
+
+                chunk = new byte[length];
+                if (length > 0)
+                {
+                    Array.Copy(cacheFiles[filename].Data, offset, chunk, 0, length);
+                }
+                cacheFiles[filename].LastAccessDate = DateTime.Now;
+            }
             return chunk;
         }
 
@@ -225,12 +235,14 @@ namespace DokanNFC
             fileInfo = new FileInformation();
             try
             {
+                fileInfo.Attributes |= (CacheExists(fileName)) ? FileAttributes.Normal : FileAttributes.Directory;
                 DateTime org = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
                 fileInfo.CreationTime = org;
                 fileInfo.LastAccessTime = org;
                 fileInfo.LastWriteTime = org;
-                fileInfo.Length = GetFileSize(fileName);
+                if (!info.IsDirectory)
+                    fileInfo.Length = GetFileSize(fileName);
             }
             catch (FileNotFoundException)
             {
