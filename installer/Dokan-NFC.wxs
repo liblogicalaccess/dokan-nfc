@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="F199F19E-66B2-43F3-A603-4CDB2C7EA9AA" Name="Dokan-NFC" Language="1033" Version="1.0.0.0" Manufacturer="ISLOG" UpgradeCode="DCC80DDC-0C0A-4634-A973-9F6D5B985557">
+        <Package Description="Test file in a Product" Comments="Simple test" InstallerVersion="200" Compressed="yes" />
+        <Media Id="1" Cabinet="simple.cab" EmbedCab="yes" />
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder" Name="PFiles">
+                <Directory Id="RELEASE" Name="Dokan-NFC">
+                    <Component Id="DOKANNET.DLL" DiskId="1" Guid="1E6C3E37-E8D2-4D7C-AAC4-1BDF1D013791">
+                        <File Id="DOKANNET.DLL" Name="DokanNet.dll" Source="..\bin\Release\DokanNet.dll" />
+                    </Component>
+                    <Component Id="DOKANNFC_CONFIGURATION.EXE" DiskId="1" Guid="A8390DD1-BEB6-470E-BAF6-940651A35284">
+                        <File Id="DOKANNFC_CONFIGURATION.EXE" Name="DokanNFC-Configuration.exe" Source="..\bin\Release\DokanNFC-Configuration.exe" />
+                    </Component>
+                    <Component Id="DOKANNFC_CONFIGURATION.EXE.CONFIG" DiskId="1" Guid="FD106E00-D974-4950-B4F0-F5379E72F727">
+                        <File Id="DOKANNFC_CONFIGURATION.EXE.CONFIG" Name="DokanNFC-Configuration.exe.config" Source="..\bin\Release\DokanNFC-Configuration.exe.config" />
+                    </Component>
+                    <Component Id="DOKANNFC_CONTROLS.DLL" DiskId="1" Guid="CB1C7542-3031-43E8-8E8C-44BD8B1043CE">
+                        <File Id="DOKANNFC_CONTROLS.DLL" Name="DokanNFC-Controls.dll" Source="..\bin\Release\DokanNFC-Controls.dll" />
+                    </Component>
+                    <Component Id="DOKANNFC_LIBRARY.DLL" DiskId="1" Guid="C289572F-96B7-4132-8B6B-0233BC72DB0F">
+                        <File Id="DOKANNFC_LIBRARY.DLL" Name="DokanNFC-Library.dll" Source="..\bin\Release\DokanNFC-Library.dll" />
+                    </Component>
+                    <Component Id="DOKANNFC_SERVICE.EXE" DiskId="1" Guid="219C60F7-CDF1-47F8-8AA5-5A77EE077CB5">
+                        <File Id="DOKANNFC_SERVICE.EXE" Name="DokanNFC-Service.exe" Source="..\bin\Release\DokanNFC-Service.exe" />
+                    </Component>
+                    <Component Id="DOKANNFC_SERVICE.EXE.CONFIG" DiskId="1" Guid="70B4AA11-53C0-4E44-9D05-D8D412145136">
+                        <File Id="DOKANNFC_SERVICE.EXE.CONFIG" Name="DokanNFC-Service.exe.config" Source="..\bin\Release\DokanNFC-Service.exe.config" />
+                    </Component>
+                    <Component Id="DOKANNFC_SHELLEXT.DLL" DiskId="1" Guid="F3B6AF53-7010-4AAE-817D-31B6D22EA000">
+                        <File Id="DOKANNFC_SHELLEXT.DLL" Name="DokanNFC-ShellExt.dll" Source="..\bin\Release\DokanNFC-ShellExt.dll" />
+                    </Component>
+                    <Component Id="INTEROP.LIBLOGICALACCESS.COM.DLL" DiskId="1" Guid="1D935B09-4DC5-46C8-AC15-A2F93C23ADE8">
+                        <File Id="INTEROP.LIBLOGICALACCESS.COM.DLL" Name="Interop.LibLogicalAccess.Com.dll" Source="..\bin\Release\Interop.LibLogicalAccess.Com.dll" />
+                    </Component>
+                    <Component Id="LOG4NET.DLL" DiskId="1" Guid="09896005-F6CD-414A-964F-F976862BE8A1">
+                        <File Id="LOG4NET.DLL" Name="log4net.dll" Source="..\bin\Release\log4net.dll" />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+        <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
+        </Feature>
+        <UI />
+        <UIRef Id="WixUI_FeatureTree" />
+    </Product>
+</Wix>

@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ISLOG")]
-[assembly: AssemblyProduct("DokanNFC-Library")]
+[assembly: AssemblyProduct("DokanNFC")]
 [assembly: AssemblyCopyright("Copyright © ISLOG 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

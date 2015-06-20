@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved]
+"{D7FF7986-8FCF-408B-B54D-D8D9BA4EACCD}"="DokanNFC.DokanNFCShellExt"
+
+[HKEY_CLASSES_ROOT\drive\shellex\PropertySheetHandlers\DokanNFC.DokanNFCShellExt]
+@="{D7FF7986-8FCF-408B-B54D-D8D9BA4EACCD}"

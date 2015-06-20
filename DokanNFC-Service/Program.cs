@@ -30,7 +30,6 @@ namespace DokanNFC
             }
             if (startServiceMode)
             {
-
                 ServiceBase[] ServicesToRun;
                 ServicesToRun = new ServiceBase[] 
                 { 
