@@ -132,6 +132,7 @@ namespace DokanNFC
                                                 Mount(mountPoint, options);
                                             }
 
+                                            RemovalChecker();
                                             while (!waitRemoval.WaitOne(500) && IsRunning) ;
                                             log.Info("Card removed.");
 
@@ -179,8 +180,34 @@ namespace DokanNFC
             }
         }
 
+        private void RemovalChecker()
+        {
+            new Thread(new ThreadStart(delegate()
+                {
+                    IReaderUnit readerUnit = DokanNFCConfig.CreateReaderUnitFromName(readerProvider, readerUnitName);
+                    if (readerUnit.ConnectToReader())
+                    {
+                        if (readerUnit.WaitInsertion(1))
+                        {
+                            while (!readerUnit.WaitRemoval(500) && IsRunning) ;
+
+                            if (insertedChip != null)
+                            {
+                                ResetCard();
+                            }
+                        }
+                        readerUnit.DisconnectFromReader();
+                    }
+
+                    GC.KeepAlive(readerUnit);
+                }
+            )).Start();
+        }
+
         private void Mount(string mountPoint, DokanOptions options)
         {
+            log.Info(String.Format("Mount {0}", mountPoint));
+
             dokanThrd = new Thread(delegate()
             {
                 log.Info("Dokan thread started");

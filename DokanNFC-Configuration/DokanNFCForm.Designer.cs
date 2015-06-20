@@ -77,12 +77,11 @@
             // rbtnModeRaw
             // 
             this.rbtnModeRaw.AutoSize = true;
-            this.rbtnModeRaw.Enabled = false;
             this.rbtnModeRaw.Location = new System.Drawing.Point(35, 36);
             this.rbtnModeRaw.Name = "rbtnModeRaw";
-            this.rbtnModeRaw.Size = new System.Drawing.Size(310, 17);
+            this.rbtnModeRaw.Size = new System.Drawing.Size(224, 17);
             this.rbtnModeRaw.TabIndex = 1;
-            this.rbtnModeRaw.Text = "Raw: chip content is displayed as raw files (not available yet)";
+            this.rbtnModeRaw.Text = "Raw: chip content is displayed as raw files";
             this.rbtnModeRaw.UseVisualStyleBackColor = true;
             // 
             // lblMode

@@ -35,13 +35,17 @@ namespace DokanNFC
             if (chip == null)
                 return DokanError.ErrorNotReady;
 
-            if (fileName == "\\" || fileName == ("\\" + chip.ChipIdentifier))
+            info.Context = new RFIDContext();
+
+            if (fileName == "\\" || (attributes & FileAttributes.Directory) != 0)
             {
+                if (!CheckDirectoryPath(fileName))
+                {
+                    log.Error("Path not found");
+                    return DokanError.ErrorFileNotFound;
+                }
+
                 return DokanError.ErrorSuccess;
-            }
-            else if ((attributes & FileAttributes.Directory) != 0)
-            {
-                return DokanError.ErrorFileNotFound;
             }
             else
             {
@@ -52,7 +56,7 @@ namespace DokanNFC
                     {
                         if (CacheCount() > 0)
                         {
-                            log.Error("Cache already initiliazed and cannot found file");
+                            log.Error("Cache already initialized and cannot found file");
                             return DokanError.ErrorFileNotFound;
                         }
 
@@ -61,8 +65,8 @@ namespace DokanNFC
                         {
                             exists = CacheExists(fileName);
                         }
-                        
-                        return payloadRet;
+                        else
+                            return payloadRet;
                     }
                     else
                     {
@@ -80,7 +84,10 @@ namespace DokanNFC
                             if (exists)
                                 return DokanError.ErrorSuccess;
                             else
+                            {
+                                log.Error("File not found.");
                                 return DokanError.ErrorFileNotFound;
+                            }
                         }
 
                     case FileMode.CreateNew:
@@ -144,7 +151,7 @@ namespace DokanNFC
             // Deleting root directory = card format
             if (fileName.IndexOf('\\') == -1)
             {
-                EraseCard();
+                return EraseCard();
             }
             
             return DokanError.ErrorPathNotFound;
@@ -246,17 +253,28 @@ namespace DokanNFC
                 return payloadRet;
             }
 
-            string filename = "\\record";
-            if (!String.IsNullOrEmpty(extension))
-                filename += "." + extension;
-
-            if (!String.IsNullOrEmpty(parentName))
+            if (payload != null)
             {
-                filename = parentName + filename;
+                string filename = "\\record";
+                if (!String.IsNullOrEmpty(extension))
+                {
+                    filename += "." + extension;
+                    if (extension == "url")
+                    {
+                        string lnk = "[InternetShortcut]" + Environment.NewLine;
+                        lnk += "URL=" + Encoding.ASCII.GetString(payload) + Environment.NewLine;
+                        payload = Encoding.ASCII.GetBytes(lnk);
+                    }
+                }
+
+                if (!String.IsNullOrEmpty(parentName))
+                {
+                    filename = parentName + filename;
+                }
+                InitCache(filename);
+                WriteToCache(filename, payload);
+                log.Info(String.Format("Record cached as {0}", filename));
             }
-            InitCache(filename);
-            WriteToCache(filename, payload);
-            log.Info(String.Format("Record cached as {0}", filename));
             return DokanError.ErrorSuccess;
         }
 
@@ -297,10 +315,8 @@ namespace DokanNFC
                             object payloadobj = record.Payload;
                             if (payloadobj != null)
                             {
-                                log.Info("Waza4");
                                 payload = payloadobj as byte[];
-                                log.Info("Waza5");
-                                extension = GetPayloadExtension(record);
+                                payload = ParsePayload(record, payload, out extension);
                             }
                             else
                             {
@@ -315,7 +331,7 @@ namespace DokanNFC
                 }
                 else
                 {
-                    log.Info("No NDEF message on ths card");
+                    log.Info("No NDEF message on this card");
                 }
             }
             catch (COMException ex)
@@ -323,13 +339,88 @@ namespace DokanNFC
                 log.Info("NDEF read error", ex);
             }
 
-            log.Info("WazaX");
+            return DokanError.ErrorSuccess;
+        }
+
+        protected DokanError WritePayload(byte[] payload, string extension)
+        {
+            // Make sure the chip is still here
+            if (!rfidListener.ReconnectOnCard())
+            {
+                log.Error("Card reconnection failed");
+                return DokanError.ErrorNotReady;
+            }
+
+            IChip chip = rfidListener.GetChip();
+            ICardService svc = chip.GetService(CardServiceType.CST_NFC_TAG);
+            IDESFireEV1NFCTag4CardService nfcsvc = svc as IDESFireEV1NFCTag4CardService;
+            if (nfcsvc == null)
+            {
+                log.Error("No NFC service.");
+                // If no NFC service for this chip, we must fail
+                return DokanError.ErrorNotReady;
+            }
+
+            try
+            {
+                IStorageCardService storage = chip.GetService(CardServiceType.CST_STORAGE) as IStorageCardService;
+                if (storage != null)
+                {
+                    storage.Erase();
+                }
+                nfcsvc.CreateNFCApplication(1, null);
+
+                NdefMessage ndef = new NdefMessage();
+                switch (extension)
+                {
+                    case "txt":
+                        log.Info("Adding Text Record");
+                        ndef.AddRawTextRecord(payload);
+                        break;
+                    case "url":
+                        string lnk = Encoding.UTF8.GetString(payload);
+                        int urlpos = lnk.IndexOf("URL=");
+                        if (urlpos > -1)
+                        {
+                            urlpos += 4;
+                            int end = lnk.IndexOf(Environment.NewLine, urlpos);
+                            if (end < 0)
+                            {
+                                end = lnk.Length - urlpos;
+                            }
+                            else
+                            {
+                                end -= urlpos;
+                            }
+                            string url = lnk.Substring(urlpos, end).Trim();
+                            log.Info(String.Format("Adding Uri Record `{0}`", url));
+                            ndef.AddUriRecord(url, UriType.NO_PREFIX);
+                        }
+                        else
+                        {
+                            log.Warn("Cannot found URL on link file content.");
+                        }
+                        break;
+                    default:
+                        string mime = System.Web.MimeMapping.GetMimeMapping("dummy." + extension);
+                        log.Info(String.Format("Adding Mime Record `{0}`", mime));
+                        ndef.AddMimeMediaRecord(mime, Encoding.ASCII.GetString(payload));   // This shouldn't be a string here
+                        break;
+                }
+                nfcsvc.WriteNDEFFile(ndef);
+
+                ResetCache();
+            }
+            catch (COMException ex)
+            {
+                log.Info("NDEF write error", ex);
+            }
+
             return DokanError.ErrorSuccess;
         }
 
         public override long GetFileSize(string fileName)
         {
-            IChip chip = rfidListener.GetChip();
             byte[] data = ReadFromCache(fileName);
             if (data != null)
                 return data.Length;
@@ -337,32 +428,95 @@ namespace DokanNFC
             return 0;
         }
 
-        protected string GetPayloadExtension(INdefRecord record)
+        protected byte[] ParsePayload(INdefRecord record, byte[] payload, out string extension)
         {
-            string ext = String.Empty;
+            // Parse payload data because current liblogicalaccess implementation is too basic
+            // This is stupid, end-user shouldn't know about NDEF structure
+            // It should be done on liblogicalaccess side!
+
+            extension = String.Empty;
+            byte[] data = null;
             object otype = record.Type;
             if (otype != null)
             {
                 byte[] type = (byte[])otype;
+                string strType = System.Text.Encoding.UTF8.GetString(type).ToLower();
+
+                log.Info(String.Format("Ndef Record type: {0}", strType));
 
                 if (type.Length == 1 && type[0] == 0x54)
                 {
+                    if (payload.Length > 0)
+                    {
+                        string encodingname = "us-ascii";
+                        if (payload[0] != 0)
+                            encodingname = System.Text.Encoding.ASCII.GetString(payload, 1, payload[0]);
+                        Encoding encoding = Encoding.GetEncoding(encodingname);
+                        if (encoding == null)
+                        {
+                            encoding = Encoding.ASCII;
+                            encodingname = encoding.EncodingName;
+                        }
+                        int length = payload.Length - 1 - payload[0];
+                        if (length > 0)
+                        {
+                            data = new byte[length];
+                            Array.Copy(payload, payload[0] + 1, data, 0, length);
+                        }
+                    }
                     // Text record type
-                    ext = "txt";
+                    extension = "txt";
                 }
                 else if (type.Length == 1 && type[0] == 0x55)
                 {
+                    if (payload.Length > 0)
+                    {
+                        UriType uriType = UriType.NO_PREFIX;
+                        string uri = String.Empty;
+                        if (payload[0] != 0)
+                            uriType = (UriType)payload[0];
+
+                        int length = payload.Length - 1;
+                        if (length != 0)
+                            uri = System.Text.Encoding.UTF8.GetString(payload, 1, length);
+
+                        switch (uriType)
+                        {
+                            case UriType.HTTP:
+                                uri = "http://" + uri;
+                                break;
+                            case UriType.HTTP_WWW:
+                                uri = "http://www." + uri;
+                                break;
+                            case UriType.HTTPS:
+                                uri = "https://" + uri;
+                                break;
+                            case UriType.HTTPS_WWW:
+                                uri = "https://www." + uri;
+                                break;
+                            case UriType.MAIL_TO:
+                                uri = "mailto://" + uri;
+                                break;
+                            case UriType.TEL:
+                                uri = "tel://" + uri;
+                                break;
+                            case UriType.URI_FILE:
+                                uri = "file://" + uri;
+                                break;
+                        }
+                        data = System.Text.Encoding.UTF8.GetBytes(uri);
+                    }
                     // Uri record type
-                    ext = "url";
+                    extension = "url";
                 }
                 else if (record.TNF == TNF.TNF_MIME_MEDIA)
                 {
-                    string mimeType = System.Text.Encoding.UTF8.GetString(type).ToLower();
-                    ext = GetDefaultExtension(mimeType);                    
+                    data = payload;
+                    extension = GetDefaultExtension(strType);                    
                 }
             }
 
-            return ext;
+            return data;
         }
 
         protected string GetDefaultExtension(string mimeType)
@@ -373,7 +527,7 @@ namespace DokanNFC
 
             key = Registry.ClassesRoot.OpenSubKey(@"MIME\Database\Content Type\" + mimeType, false);
             value = key != null ? key.GetValue("Extension", null) : null;
-            result = value != null ? value.ToString() : String.Empty;
+            result = value != null ? value.ToString().Trim(' ', '.') : String.Empty;
 
             return result;
         }
@@ -393,17 +547,31 @@ namespace DokanNFC
             if (chip == null)
                 return DokanError.ErrorNotReady;
 
-            if (fileName == "\\")
-                return DokanError.ErrorSuccess;
-
-            if (nfcConfig.CSNAsRoot)
+            if (!CheckDirectoryPath(fileName))
             {
-                if (fileName == chip.ChipIdentifier)
-                    return DokanError.ErrorSuccess;
+                log.Error("Path not found");
+                return DokanError.ErrorPathNotFound;
             }
 
-            log.Error("Path not found");
-            return DokanError.ErrorPathNotFound;
+            return DokanError.ErrorSuccess;
+        }
+
+        protected bool CheckDirectoryPath(string fileName)
+        {
+            if (fileName == "\\")
+                return true;
+
+            IChip chip = rfidListener.GetChip();
+            if (chip != null)
+            {
+                if (nfcConfig.CSNAsRoot)
+                {
+                    if (fileName == chip.ChipIdentifier)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         public override DokanError ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
@@ -448,9 +616,27 @@ namespace DokanNFC
                 return DokanError.ErrorError;
             }
 
+            if (info.Context is RFIDContext)
+            {
+                RFIDContext ctx = info.Context as RFIDContext;
+                ctx.WriteCacheOnClose = true;
+            }
+
             WriteToCache(fileName, buffer, (int)offset);
             bytesWritten = buffer.Length;
             return DokanError.ErrorSuccess;
+        }
+
+        protected override DokanError WriteCacheToCard(string fileName)
+        {
+            fileName = fileName.ToLower();
+            if (!cacheFiles.ContainsKey(fileName))
+                return DokanError.ErrorFileNotFound;
+
+            byte[] payload = cacheFiles[fileName].Data;
+            string ext = Path.GetExtension(fileName).Trim(' ', '.');
+            log.Info(String.Format("Writing file `{0}` cache ({1} bytes) to card...", fileName, payload.Length));
+            return WritePayload(payload, ext);
         }
     }
 }

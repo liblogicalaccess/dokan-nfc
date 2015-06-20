@@ -123,6 +123,7 @@ namespace DokanNFC
                 if (storage != null)
                 {
                     storage.Erase();
+                    ResetCache();
                     return DokanError.ErrorSuccess;
                 }
                 else
@@ -142,15 +143,38 @@ namespace DokanNFC
         {
             log.Info(String.Format("Cleanup call - {0}", fileName));
 
+            if (info.DeleteOnClose)
+            {
+                if (info.IsDirectory)
+                {
+                    DeleteDirectory(fileName, info);
+                }
+                else
+                {
+                    DeleteFile(fileName, info);
+                }
+            }
+
             return DokanError.ErrorSuccess;
         }
 
         public DokanError CloseFile(string fileName, DokanFileInfo info)
         {
             log.Info(String.Format("CloseFile call - {0}", fileName));
+
+            if (info.Context is RFIDContext)
+            {
+                RFIDContext ctx = info.Context as RFIDContext;
+                if (ctx.WriteCacheOnClose)
+                {
+                    return WriteCacheToCard(fileName);
+                }
+            }
             
             return DokanError.ErrorSuccess;
         }
+
+        protected abstract DokanError WriteCacheToCard(string fileName);
 
         public abstract DokanError CreateDirectory(string fileName, DokanFileInfo info);
 
@@ -244,8 +268,9 @@ namespace DokanNFC
                 if (!info.IsDirectory)
                     fileInfo.Length = GetFileSize(fileName);
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
+                log.Error("GetFileInformation error, file not found", ex);
                 return DokanError.ErrorFileNotFound;
             }
             catch (Exception ex)
