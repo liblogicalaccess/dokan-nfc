@@ -5,7 +5,7 @@ RFID / NFC File System Driver for Windows.
 ## Installation
 ### Dependencies
  - Microsoft .NET Framework 4.5
- - [LibLogicalAccess 1.77.1](http://artifacts.islog-services.eu/repository/rfid-releases/eu/islog/lib/readers/liblogicalaccess-exe/1.77.1/liblogicalaccess-exe-1.77.1.zip) (RFID Middleware)
+ - [LibLogicalAccess 1.78.0](http://artifacts.islog-services.eu/repository/rfid-releases/eu/islog/lib/readers/liblogicalaccess-exe/1.78.0/liblogicalaccess-exe-1.78.0.zip) (RFID Middleware)
  - [Dokan 0.7.2](https://github.com/dokan-dev/dokany/releases/download/0.7.2/DokanInstall_0.7.2.exe) (User Mode File System Driver)
  - A compatible RFID reader, see [compatible device list](http://liblogicalaccess.islog.com/wiki/doku.php/hardware-list#readers).
  
